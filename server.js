@@ -13,7 +13,7 @@ app.use(express.json());
 
 // OpenAI client
 const client = new OpenAI({
-  apiKey: "sk-proj-5byOGe8BD24amoKQhLC3nR6OqWYtjy09n8ZeAn_Omisr0i-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" // ⚠️ Abhi test key hai, future me .env use karna
+  apiKey: "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" // ⚠️ isko .env file me rakhna best practice hai
 });
 
 // 🔹 Static files serve karne ke liye
@@ -24,8 +24,13 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// 🔹 API route
-app.post("/chat", async (req, res) => {
+// 🔹 Chat page route (chat.html serve karega)
+app.get("/chat", (req, res) => {
+  res.sendFile(path.join(__dirname, "chat.html"));
+});
+
+// 🔹 API route (AI chat)
+app.post("/chatapi", async (req, res) => {
   try {
     const { message } = req.body;
 
