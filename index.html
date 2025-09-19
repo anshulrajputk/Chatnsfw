@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ChatNSFW</title>
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Poppins', 'Inter', 'sans-serif'] },
+        colors: { cnsfwpink: '#ec4899', cnsfwvio: '#8b5cf6' }
+      }
+    }
+  }
+</script>
+
+<style>
+:root{
+  --pink:#ec4899;
+  --vio:#8b5cf6;
+  --bg-dark:#111;
+  --bg-darker:#0d0d0d;
+}
+
+body {
+  background: radial-gradient(circle at top, #1a1a1a, #0d0d0d 70%);
+  color: #fff;
+  font-family: 'Poppins','Inter',sans-serif;
+  scroll-behavior:smooth;
+}
+
+/* HEADER */
+.header-blur{
+  backdrop-filter:blur(12px);
+  background:rgba(0,0,0,.4);
+}
+
+/* HERO */
+.hero {
+  background: linear-gradient(to right, rgba(0,0,0,0.75), rgba(0,0,0,0.5)),
+              url('https://files.catbox.moe/wb5sdb.png') center/cover no-repeat;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(90deg,var(--pink),var(--vio));
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.hero p {
+  font-size: 1rem;
+  color: #ddd;
+  margin-top: 0.5rem;
+}
+
+/* CUSTOM SELECT (Category) */
+.cnsfw-select{
+  position:relative;
+  min-width:170px;
+  padding:8px 34px 8px 16px;
+  font-size:13px;
+  line-height:1;
+  font-weight:600;
+  border-radius:9999px;
+  cursor:pointer;
+  user-select:none;
+  color:#fff;
+  background:#111;
+  border:1px solid transparent;
+  background-image:
+    linear-gradient(#111,#111),
+    linear-gradient(90deg,var(--pink),var(--vio));
+  background-origin:border-box;
+  background-clip:padding-box,border-box;
+  transition:box-shadow .25s;
+}
+.cnsfw-select:hover{
+  box-shadow:0 0 8px rgba(236,72,153,.5),0 0 12px rgba(139,92,246,.4);
+}
+.cnsfw-select span.arrow{
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:10px;
+  opacity:.8;
+  pointer-events:none;
+  transition:transform .2s;
+}
+.cnsfw-select.open span.arrow{
+  transform:translateY(-50%) rotate(180deg);
+}
+.cnsfw-select-menu{
+  position:absolute;
+  left:0;
+  right:0;
+  top:calc(100% + 4px);
+  background:#1c1c1c;
+  border:1px solid rgba(236,72,153,.5);
+  border-radius:16px;
+  overflow:hidden;
+  z-index:20;
+  display:none;
+  animation:fadeSlide .15s ease forwards;
+}
+.cnsfw-select.open .cnsfw-select-menu{display:block;}
+.cnsfw-select-menu .opt{
+  padding:10px 16px;
+  font-size:13px;
+  cursor:pointer;
+  transition:background .15s;
+}
+.cnsfw-select-menu .opt:hover{
+  background:rgba(236,72,153,.25);
+}
+@keyframes fadeSlide{
+  from{opacity:0;transform:translateY(-4px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* SEARCH */
+.cnsfw-search{
+  width:120px;
+  padding:8px 14px;
+  font-size:13px;
+  border-radius:9999px;
+  background:#111;
+  border:1px solid transparent;
+  background-image:
+    linear-gradient(#111,#111),
+    linear-gradient(90deg,var(--vio),var(--pink));
+  background-origin:border-box;
+  background-clip:padding-box,border-box;
+  transition:box-shadow .25s,width .25s;
+  color:#fff;
+}
+.cnsfw-search:focus{
+  outline:none;
+  width:160px;
+  box-shadow:0 0 8px rgba(139,92,246,.6),0 0 12px rgba(236,72,153,.4);
+}
+
+/* TAG BUTTONS */
+.tag-btn {
+  background: #222;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.25s, background 0.25s, box-shadow .25s;
+  border:1px solid #333;
+}
+.tag-btn:hover{
+  transform:translateY(-2px) scale(1.03);
+  box-shadow:0 0 6px rgba(255,255,255,.15);
+}
+.tag-btn.active {
+  background: linear-gradient(90deg, var(--pink), var(--vio));
+  box-shadow: 0 0 10px rgba(236,72,153,.7), 0 0 16px rgba(139,92,246,.7);
+  border-color:transparent;
+}
+
+/* CARD */
+.card {
+  position: relative;
+  width: 100%;
+  height: 340px;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-shadow: 0 0 35px rgba(236,72,153,0.3), 0 0 50px rgba(139,92,246,0.25);
+  transition: transform 0.28s, box-shadow 0.28s;
+}
+.card:hover {
+  transform: translateY(-5px);
+}
+.card.active{
+  transform:translateY(-4px) scale(1.02);
+  box-shadow:0 0 45px rgba(236,72,153,.65),0 0 70px rgba(139,92,246,.55);
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1.5rem;
+  padding: 2px;
+  background: linear-gradient(135deg, var(--pink), var(--vio), var(--pink));
+  background-size: 400% 400%;
+  animation: borderShimmer 5s infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+}
+@keyframes borderShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* CARD IMAGE */
+.card-image {
+  position:absolute;
+  inset:0;
+}
+.card-image img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+/* CARD CONTENT */
+.card-content {
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.05));
+  padding: 14px;
+  text-align: left;
+  border-bottom-left-radius:1.5rem;
+  border-bottom-right-radius:1.5rem;
+  transition:background .25s;
+}
+.card.active .card-content{
+  background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.15));
+}
+
+/* CHAT BUTTON */
+.chat-btn {
+  position:relative;
+  display:inline-block;
+  margin-top:6px;
+  padding:6px 16px;
+  background: linear-gradient(90deg, var(--pink), var(--vio));
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 9999px;
+  box-shadow: 0 0 10px rgba(236,72,153,.6), 0 0 20px rgba(139,92,246,.5);
+  transition: transform .25s ease, box-shadow .25s ease;
+  overflow:hidden;
+}
+.chat-btn:hover {
+  transform: scale(1.07);
+  box-shadow: 0 0 14px rgba(236,72,153,.7), 0 0 28px rgba(139,92,246,.6);
+}
+/* shine sweep */
+.chat-btn.shine::after,
+.card:hover .chat-btn::after {
+  content:"";
+  position:absolute;
+  top:0;left:-120%;
+  width:100%;height:100%;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.6),transparent);
+  transform:skewX(-25deg);
+  animation:btnShine .6s forwards;
+}
+@keyframes btnShine{
+  100%{left:120%;}
+}
+/* pulse after shine */
+.chat-btn.pulse{
+  animation:btnPulse 1.6s ease-in-out .65s infinite alternate;
+}
+@keyframes btnPulse{
+  0%{box-shadow:0 0 8px rgba(236,72,153,.6),0 0 18px rgba(139,92,246,.4);}
+  100%{box-shadow:0 0 16px rgba(236,72,153,.9),0 0 32px rgba(139,92,246,.7);}
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 20px 0;
+  background: #111;
+  color: #aaa;
+  font-size: 12px;
+  margin-top: 40px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header-blur sticky top-0 z-50">
+  <div class="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
+    <a href="#" class="text-2xl font-bold text-cnsfwpink">ChatNSFW</a>
+    <a href="#" class="px-5 py-2 rounded-full bg-gradient-to-r from-cnsfwpink to-cnsfwvio text-sm font-semibold">+ Create Character</a>
+  </div>
+</header>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div>
+    <h1>Meet Your Fantasy Characters</h1>
+    <p>Explore premium, AI-powered personalities with luxury vibes.</p>
+  </div>
+</section>
+
+<!-- FILTER BAR -->
+<div class="max-w-5xl mx-auto px-4 mt-5 flex items-center gap-3">
+  <!-- Custom Select -->
+  <div class="cnsfw-select" id="categorySelect" data-value="all">
+    <span class="label">All</span>
+    <span class="arrow">▼</span>
+    <div class="cnsfw-select-menu">
+      <div class="opt" data-value="all">All</div>
+      <div class="opt" data-value="popular">Popular</div>
+      <div class="opt" data-value="trending">Trending</div>
+      <div class="opt" data-value="nsfw18">NSFW 18+</div>
+    </div>
+  </div>
+  <!-- Search -->
+  <input id="searchInput" class="cnsfw-search" type="text" placeholder="Search..." />
+</div>
+
+<!-- TAGS -->
+<div class="max-w-5xl mx-auto px-4 py-4">
+  <div class="flex flex-wrap gap-2">
+    <button class="tag-btn active" data-tag="all">All</button>
+    <button class="tag-btn" data-tag="mine">Mine</button>
+    <button class="tag-btn" data-tag="anime">Anime</button>
+    <button class="tag-btn" data-tag="stepmom">Step Mom</button>
+    <button class="tag-btn" data-tag="milfs">MILFs</button>
+    <button class="tag-btn" data-tag="gamer">Gamer</button>
+    <button class="tag-btn" data-tag="nurse">Nurse</button>
+    <button class="tag-btn" data-tag="roleplay">RolePlay</button>
+    <button class="tag-btn" data-tag="stepsister">Step Sister</button>
+    <button class="tag-btn" data-tag="maid">Maid</button>
+    <button class="tag-btn" data-tag="teacher">Teacher</button>
+    <button class="tag-btn" data-tag="celebrity">Celebrity</button>
+    <button class="tag-btn" data-tag="waifu">Waifu</button>
+  </div>
+</div>
+
+<!-- Cards -->
+<section id="cardsGrid" class="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 gap-4 px-4 pb-20 mt-8">
+  <!-- Tsunade -->
+  <div class="card" 
+       data-tags="anime stepmom" 
+       data-cat="popular"
+       data-name="tsunade anime step mom"
+       data-char="Tsunade"
+       data-avatar="https://files.catbox.moe/wj337e.jpg"
+       data-role="Step Mom"
+       data-desc="Hey, I&apos;m Tsunade—tough outside, secretly soft for you. Roleplay Step Mom vibe. Talk to me?"
+       data-welcomeimg="https://files.catbox.moe/wj337e.jpg">
+    <div class="card-image">
+      <img src="https://files.catbox.moe/wj337e.jpg" alt="Tsunade">
+    </div>
+    <div class="card-content">
+      <h3 class="font-semibold text-sm">Tsunade (Anime • Step Mom)</h3>
+      <p class="text-gray-200 text-xs mt-1">Bold, strong, and secretly soft for you.</p>
+      <button class="chat-btn">Chat Now</button>
+    </div>
+  </div>
+
+  <!-- Catherine (MILFs + mom) -->
+  <div class="card" 
+       data-tags="milfs mom" 
+       data-cat="trending"
+       data-name="catherine milf mom"
+       data-char="Catherine"
+       data-avatar="https://files.catbox.moe/b4mtm8.png"
+       data-role="MILFs"
+       data-desc="I&apos;m Catherine—mature, classy, and a little naughty when it&apos;s just us. Unwind with me?"
+       data-welcomeimg="https://files.catbox.moe/b4mtm8.png">
+    <div class="card-image">
+      <img src="https://files.catbox.moe/b4mtm8.png" alt="Catherine">
+    </div>
+    <div class="card-content">
+      <h3 class="font-semibold text-sm">Catherine (MILFs)</h3>
+      <p class="text-gray-200 text-xs mt-1">Mature grace & irresistible charm.</p>
+      <button class="chat-btn">Chat Now</button>
+    </div>
+  </div>
+
+  <!-- Sneha -->
+  <div class="card" 
+       data-tags="stepmom celebrity" 
+       data-cat=""
+       data-name="sneha step mom"
+       data-char="Sneha"
+       data-avatar="https://files.catbox.moe/xk1nse.jpg"
+       data-role="Step Mom"
+       data-desc="Sneha here! Desi heat, gentle voice, spicy mood. Roleplay Step Mom who teases & cares."
+       data-welcomeimg="https://files.catbox.moe/xk1nse.jpg">
+    <div class="card-image">
+      <img src="https://files.catbox.moe/xk1nse.jpg" alt="Sneha">
+    </div>
+    <div class="card-content">
+      <h3 class="font-semibold text-sm">Sneha (Step Mom)</h3>
+      <p class="text-gray-200 text-xs mt-1">Desi heat, soft tone, spicy mood.</p>
+      <button class="chat-btn">Chat Now</button>
+    </div>
+  </div>
+
+  <!-- Riya -->
+  <div class="card" 
+       data-tags="teacher mine" 
+       data-cat=""
+       data-name="riya teacher"
+       data-char="Riya"
+       data-avatar="https://files.catbox.moe/952eak.webp"
+       data-role="Teacher"
+       data-desc="Professor Riya—strict in class, playful after hours. Let&apos;s start with attendance: what&apos;s your name?"
+       data-welcomeimg="https://files.catbox.moe/952eak.webp">
+    <div class="card-image">
+      <img src="https://files.catbox.moe/952eak.webp" alt="Riya">
+    </div>
+    <div class="card-content">
+      <h3 class="font-semibold text-sm">Riya (Teacher)</h3>
+      <p class="text-gray-200 text-xs mt-1">Strict in class, playful after hours.</p>
+      <button class="chat-btn">Chat Now</button>
+    </div>
+  </div>
+
+  <!-- Scarlett (NSFW 18+) -->
+  <div class="card" 
+       data-tags="waifu nsfw18" 
+       data-cat="nsfw18"
+       data-name="scarlett nsfw"
+       data-char="Scarlett"
+       data-avatar="https://files.catbox.moe/13q737.jpg"
+       data-role="NSFW 18+"
+       data-desc="Scarlett unlocked—18+ fantasy mode. Bold, flirty, unfiltered when you are. Ready?"
+       data-welcomeimg="https://files.catbox.moe/13q737.jpg"
+       id="scarlettCard">
+    <div class="card-image">
+      <img src="https://files.catbox.moe/13q737.jpg" alt="Scarlett">
+    </div>
+    <div class="card-content">
+      <h3 class="font-semibold text-sm">Scarlett (NSFW 18+)</h3>
+      <p class="text-gray-200 text-xs mt-1">Unlocked in 18+ mode. Unfiltered fantasy.</p>
+      <button class="chat-btn">Chat Now</button>
+    </div>
+  </div>
+
+  <!-- Luna -->
+  <div class="card" 
+       data-tags="gamer stepsister" 
+       data-cat="popular"
+       data-name="luna step sister gamer"
+       data-char="Luna"
+       data-avatar="https://files.catbox.moe/kqm18w.png"
+       data-role="Step Sister"
+       data-desc="Luna here! Chaotic gamer sis energy—queue up, tease me, drop your best line."
+       data-welcomeimg="https://files.catbox.moe/kqm18w.png">
+    <div class="card-image">
+      <img src="https://files.catbox.moe/kqm18w.png" alt="Luna">
+    </div>
+    <div class="card-content">
+      <h3 class="font-semibold text-sm">Luna (Step Sister)</h3>
+      <p class="text-gray-200 text-xs mt-1">Playful stream crush energy.</p>
+      <button class="chat-btn">Chat Now</button>
+    </div>
+  </div>
+
+  <!-- Tifa (MILFs • NSFW 18+) -->
+  <div class="card"
+       data-tags="milfs nsfw18"
+       data-cat="nsfw18"
+       data-name="tifa lockchart milf nsfw18"
+       data-char="Tifa LockChart"
+       data-avatar="https://files.catbox.moe/7ra5pb.png"
+       data-role="MILFs"
+       data-desc="Tifa here—battle-hardened bombshell with soft spots. Private chats stay between us."
+       data-welcomeimg="https://files.catbox.moe/7ra5pb.png"
+       id="tifaCard">
+    <div class="card-image">
+      <img src="https://files.catbox.moe/7ra5pb.png" alt="Tifa LockChart">
+    </div>
+    <div class="card-content">
+      <h3 class="font-semibold text-sm">Tifa LockChart (MILFs)</h3>
+      <p class="text-gray-200 text-xs mt-1">Curvy fighter energy. Private after-hours.</p>
+      <button class="chat-btn">Chat Now</button>
+    </div>
+  </div>
+
+  <!-- Momiji (Step Mom • NSFW 18+) -->
+  <div class="card"
+       data-tags="stepmom nsfw18"
+       data-cat="nsfw18"
+       data-name="momiji step mom nsfw18"
+       data-char="Momiji"
+       data-avatar="https://files.catbox.moe/ywd8iv.png"
+       data-role="Step Mom"
+       data-desc="Momiji—elegant guardian with a wicked sweet streak. Roleplay Step Mom if you dare."
+       data-welcomeimg="https://files.catbox.moe/ywd8iv.png"
+       id="momijiCard">
+    <div class="card-image">
+      <img src="https://files.catbox.moe/ywd8iv.png" alt="Momiji">
+    </div>
+    <div class="card-content">
+      <h3 class="font-semibold text-sm">Momiji (Step Mom)</h3>
+      <p class="text-gray-200 text-xs mt-1">Tempting guardian with secrets to share.</p>
+      <button class="chat-btn">Chat Now</button>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  © 2025 ChatNSFW. All rights reserved.
+</footer>
+
+<script>
+/* --------------------------
+   STATE
+--------------------------- */
+let activeTag = 'all';
+let activeCat = 'all';
+
+/* Elements */
+const tagBtns     = document.querySelectorAll('.tag-btn');
+const cards       = document.querySelectorAll('#cardsGrid .card');
+const searchInput = document.getElementById('searchInput');
+
+/* Custom Select */
+const catSelect = document.getElementById('categorySelect');
+const catLabel  = catSelect.querySelector('.label');
+const catMenu   = catSelect.querySelector('.cnsfw-select-menu');
+
+/* Open/close dropdown */
+catSelect.addEventListener('click',(e)=>{
+  // ignore opt click here; handled below
+  if(e.target.classList.contains('opt')) return;
+  catSelect.classList.toggle('open');
+});
+
+/* Option clicks */
+catMenu.querySelectorAll('.opt').forEach(opt=>{
+  opt.addEventListener('click',()=>{
+    activeCat = opt.dataset.value;
+    catLabel.textContent = opt.textContent;
+    catSelect.dataset.value = activeCat;
+    catSelect.classList.remove('open');
+    applyFilters();
+  });
+});
+
+/* Close select if click outside */
+document.addEventListener('click',(e)=>{
+  if(!catSelect.contains(e.target)){
+    catSelect.classList.remove('open');
+  }
+});
+
+/* Tag buttons */
+tagBtns.forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    tagBtns.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    activeTag = btn.dataset.tag;
+    applyFilters();
+  });
+});
+
+/* Search */
+searchInput.addEventListener('input',applyFilters);
+
+/* Card click -> hold glow active + Chat Now shine + pulse */
+cards.forEach(card=>{
+  // highlight card but only open chat when Chat button clicked
+  card.addEventListener('click',(e)=>{
+    if(e.target.closest('.chat-btn')) return; // handled below
+    cards.forEach(c=>c.classList.remove('active'));
+    card.classList.add('active');
+  });
+
+  const btn = card.querySelector('.chat-btn');
+  btn.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    triggerShinePulse(btn);
+    openCharacterChat(card);
+  });
+});
+
+/* Utility: shine + pulse */
+function triggerShinePulse(btn){
+  btn.classList.remove('shine','pulse'); // reset
+  void btn.offsetWidth; // reflow hack restart anim
+  btn.classList.add('shine');
+  setTimeout(()=>{btn.classList.add('pulse');},650);
+}
+
+/* Open chat: stash char data -> go chat.html */
+function openCharacterChat(card){
+  const charData = {
+    name: card.dataset.char || 'Character',
+    avatar: card.dataset.avatar || '',
+    role: card.dataset.role || '',
+    desc: card.dataset.desc || '',
+    welcomeImage: card.dataset.welcomeimg || card.dataset.avatar || ''
+  };
+  try{
+    localStorage.setItem('cnsfw_currentChar', JSON.stringify(charData));
+  }catch(err){
+    console.warn('Could not save char data',err);
+  }
+  window.location.href = 'chat.html';
+}
+
+/* Filtering */
+function applyFilters(){
+  const q = searchInput.value.trim().toLowerCase();
+
+  cards.forEach(card=>{
+    const tags = card.dataset.tags || '';
+    const cat  = card.dataset.cat  || '';
+    const name = card.dataset.name || '';
+
+    /* Category check */
+    let catMatch=false;
+    if(activeCat==='all'){ 
+      catMatch = !cat.includes('nsfw18'); // hide NSFW in All
+    }else if(activeCat==='popular'){ 
+      catMatch = cat.includes('popular'); 
+    }else if(activeCat==='trending'){ 
+      catMatch = cat.includes('trending'); 
+    }else if(activeCat==='nsfw18'){ 
+      catMatch = cat.includes('nsfw18'); 
+    }
+
+    /* Tag check */
+    const tagMatch = (activeTag==='all') ? true : tags.includes(activeTag);
+
+    /* Search check */
+    const searchMatch = !q || name.includes(q);
+
+    const show = catMatch && tagMatch && searchMatch;
+    card.style.display = show ? 'flex' : 'none';
+  });
+}
+
+/* Initial hide NSFW card by filters */
+applyFilters();
+</script>
+</body>
+</html>
