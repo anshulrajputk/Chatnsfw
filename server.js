@@ -13,7 +13,7 @@ app.use(express.json());
 
 // OpenAI client
 const client = new OpenAI({
-  apiKey: "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" // ⚠️ isko .env file me rakhna best practice hai
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 // 🔹 Static files serve karne ke liye
