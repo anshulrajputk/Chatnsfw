@@ -120,9 +120,12 @@ function showSuggestion(text){
 }
 
 /* ✅ Ye function backend se AI reply lane ke liye */
+<script>
+/* ✅ Ye function backend se AI reply lane ke liye */
 async function fetchAIResponse(userMsg){
   try{
-    const res = await fetch("http://localhost:3000/chat", {
+    // 🔥 FIX: localhost hata diya, ab relative API call hai
+    const res = await fetch("/chatapi", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: userMsg })
@@ -131,9 +134,10 @@ async function fetchAIResponse(userMsg){
     return data.reply;
   }catch(err){
     console.error(err);
-    return "⚠️ Server se reply nahi mila. Pehle `node server.js` chalao.";
+    return "⚠️ Server se reply nahi mila. Check karo server chal raha hai ya nahi.";
   }
 }
+</script>
 
 async function sendUserMessage(){
   const text=chatText.value.trim();
