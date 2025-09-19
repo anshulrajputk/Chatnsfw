@@ -13,7 +13,7 @@ app.use(express.json());
 
 // OpenAI client
 const client = new OpenAI({
-  apiKey: "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" // ⚠️ Abhi test key hai, future me .env use karna
+  apiKey: "sk-proj-5byOGe8BD24amoKQhLC3nR6OqWYtjy09n8ZeAn_Omisr0i-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" // ⚠️ Abhi test key hai, future me .env use karna
 });
 
 // 🔹 Static files serve karne ke liye
